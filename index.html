@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>My E-Library</title>
+  <title>My E-Library with PDFs</title>
   <style>
     body { font-family: Arial; padding: 20px; }
     input, button { padding: 8px; margin: 5px; }
@@ -15,6 +15,7 @@
   <input type="text" id="title" placeholder="Book Title" />
   <input type="text" id="author" placeholder="Author" />
   <input type="text" id="category" placeholder="Category" />
+  <input type="file" id="bookFile" accept="application/pdf" />
   <button onclick="addBook()">Add Book</button>
 
   <hr />
@@ -34,10 +35,16 @@
       filtered.forEach((book, index) => {
         const bookDiv = document.createElement("div");
         bookDiv.className = "book";
+
+        let pdfLink = book.pdfURL 
+          ? `<a href="${book.pdfURL}" target="_blank">Open PDF</a>` 
+          : "No PDF uploaded";
+
         bookDiv.innerHTML = `
           <div class="book-title">${book.title}</div>
           <div>Author: ${book.author}</div>
           <div>Category: ${book.category}</div>
+          <div>${pdfLink}</div>
           <button onclick="deleteBook(${index})">Delete</button>
         `;
         library.appendChild(bookDiv);
@@ -48,18 +55,34 @@
       const title = document.getElementById("title").value.trim();
       const author = document.getElementById("author").value.trim();
       const category = document.getElementById("category").value.trim();
+      const fileInput = document.getElementById("bookFile");
+      const file = fileInput.files[0];
 
       if (!title || !author || !category) {
-        alert("Please fill in all fields.");
+        alert("Please fill in all text fields.");
+        return;
+      }
+      if (!file) {
+        alert("Please upload a PDF file.");
+        return;
+      }
+      if (file.type !== "application/pdf") {
+        alert("Only PDF files are allowed.");
         return;
       }
 
-      books.push({ title, author, category });
+      // Create a URL for the uploaded PDF file
+      const pdfURL = URL.createObjectURL(file);
+
+      books.push({ title, author, category, pdfURL });
       localStorage.setItem("books", JSON.stringify(books));
       displayBooks();
+
+      // Clear inputs
       document.getElementById("title").value = "";
       document.getElementById("author").value = "";
       document.getElementById("category").value = "";
+      fileInput.value = "";
     }
 
     function deleteBook(index) {
@@ -79,3 +102,4 @@
   </script>
 </body>
 </html>
+
